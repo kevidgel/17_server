@@ -19,6 +19,7 @@ static void sighandler(int signo)
     }
     if (signo == SIGINT)
     {
+        remove("pringles");
         printf("\nExited\n");
         exit(0);   
     }
