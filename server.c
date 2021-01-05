@@ -12,8 +12,7 @@ static void sighandler(int signo)
 {
     if (signo == SIGINT)
     {
-        remove("ctp");
-        remove("ptc");
+
         printf("\n");
         exit(0);   
     }
@@ -59,7 +58,6 @@ int main()
     printf("Message received from %s\nSending message to client...\n", pid);
 
     // removes wk pipe
-    close(server);
     remove("pringles");
 
     // sends message to client
@@ -68,33 +66,27 @@ int main()
         printf("errno: %d\terror: char %s\n", errno, strerror(errno));
         return -1;
     }
-
     char ack[] = "hello";
-    
-    //creates pipes
-    mkfifo("ctp", 0666);
-    mkfifo("ptc", 0666);
-
     int w = write(client, ack, sizeof(ack));
-    close(client);
-
-    int in = open("ctp", O_RDONLY); 
-    if (in == -1) {
-        printf("errno: %d\terror: %s\n", errno, strerror(errno));
-        return -1; 
-    }
-
-    int out = open("ptc", O_WRONLY);
-    if (out == -1) {
-        printf("errno: %d\terror: %s\n", errno, strerror(errno));
+    if (w == -1) {
+        printf("errno: %d\terror: char %s\n", errno, strerror(errno));
         return -1;
     } 
+
+    char ack2[100];
+    // receives message from server
+    int r2 = read(server, ack2, sizeof(ack2));
+    if (r2 == -1) {
+        printf("errno: %d\terror: char %s\n", errno, strerror(errno));
+        return -1;
+    } 
+    printf("Message received from client. Handshake complete.\n");
 
     char userinput[100];
     while(1)
     {
         // reads from console
-        int r = read(in, userinput, sizeof(userinput));
+        int r = read(server, userinput, sizeof(userinput));
         if (r == -1) {
             printf("errno: %d\terror: char %s\n", errno, strerror(errno));
             break;
@@ -103,7 +95,7 @@ int main()
         char *processed = process(userinput);
 
         // sends to console
-        int w = write(out, processed, strlen(processed) + 1); 
+        int w = write(client, processed, strlen(processed) + 1); 
         if (w == -1) {
             printf("errno: %d\terror: %s\n", errno, strerror(errno));
             break;
@@ -112,9 +104,6 @@ int main()
         free(processed);
         
     }
-
-    close(in);
-    close(out);
 
     return 0;
 }
