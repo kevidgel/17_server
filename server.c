@@ -8,12 +8,18 @@
 #include <ctype.h>
 #include <signal.h>
 
+int main();
+
 static void sighandler(int signo)
 {
+    if (signo == SIGPIPE)
+    {
+        printf("Client disconnected.\n");
+        main();
+    }
     if (signo == SIGINT)
     {
-
-        printf("\n");
+        printf("\nExited\n");
         exit(0);   
     }
 }
@@ -37,7 +43,7 @@ char *process(char *str)
 int main()
 {
     signal(SIGINT, sighandler);
-
+    signal(SIGPIPE, sighandler);
     // creates well known pipe
     mkfifo("pringles", 0666); 
 
@@ -102,8 +108,5 @@ int main()
         }
 
         free(processed);
-        
     }
-
-    return 0;
 }

@@ -12,7 +12,7 @@ static void sighandler(int signo)
 {
     if (signo == SIGINT)
     {
-        printf("\n");
+        printf("\nExited\n");
         exit(0);   
     }
 }
